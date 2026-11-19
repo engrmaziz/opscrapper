@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Testing & Caches
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+logs/*.log
+*.log
+!logs/.gitkeep
+
+# Sensitive environment configuration
+.env
+.env.local
+*.pem
+*.key
+
+# Runtime scraped data & exports
+data/exports/*.xlsx
+data/raw/*
+data/scrape_state.json
+!data/exports/.gitkeep
+!data/raw/.gitkeep
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

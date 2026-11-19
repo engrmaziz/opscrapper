@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoJob Intelligence &middot; Job Scraper & Direct ATS Matcher</title>
+  <meta name="description" content="Autonomous Multi-Platform Job Intelligence & Direct ATS Application Matcher.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark-theme">
+
+  <!-- Security Gateway Authentication Overlay -->
+  <div id="auth-overlay" class="auth-overlay">
+    <div class="auth-card">
+      <div class="auth-card-header">
+        <div class="auth-icon-badge">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <h2>Console Authentication</h2>
+        <p class="auth-subtitle">AutoJob Security Gateway &middot; Enter your access key to unlock console.</p>
+      </div>
+
+      <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+        <div class="auth-input-wrapper">
+          <svg class="input-glyph" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="8" cy="15" r="4"></circle>
+            <path d="M10.85 12.15 19 4"></path>
+            <path d="m18 5 2 2"></path>
+            <path d="m15 8 2 2"></path>
+          </svg>
+          <input type="password" id="auth-key-input" placeholder="Access authorization key" autocomplete="current-password" required autofocus>
+          <button type="button" class="btn-toggle-visibility" onclick="toggleAuthVisibility()" title="Toggle visibility">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
+        </div>
+        <div id="auth-error" class="auth-error" style="display: none;"></div>
+        <button type="submit" id="btn-auth-submit" class="btn btn-primary auth-submit-btn">
+          <span>Continue</span>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <span>Protected local network node &middot; <code>192.168.18.97:8060</code></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-layout">
+    
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="brand-glyph">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </div>
+        <div class="brand-meta">
+          <span class="brand-title">AutoJob Intelligence</span>
+          <span class="brand-sep">/</span>
+          <span class="brand-sub">Direct ATS Matcher</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div id="connection-status" class="status-indicator live">
+          <span class="pulse-dot"></span>
+          <span class="status-text">System Ready</span>
+        </div>
+
+        <div id="auth-status-badge" class="auth-pill" style="display: none;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span id="auth-user-label">Authorized</span>
+        </div>
+
+        <button id="btn-export-excel" class="btn btn-secondary btn-sm" onclick="downloadExcel()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Export Excel</span>
+        </button>
+
+        <button id="btn-logout" class="btn btn-ghost btn-sm" onclick="logout()" title="Lock Session" style="display: none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Command Deck -->
+    <main class="app-main">
+
+      <!-- Query Control Panel -->
+      <section class="card query-panel">
+        <div class="search-form-row">
+          
+          <div class="field-item field-keyword">
+            <label for="input-keyword">Target Role or Keyword</label>
+            <div class="input-box">
+              <svg class="field-glyph" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="input-keyword" placeholder="e.g. AI Engineer, Digital Marketer, UI/UX Designer..." value="">
+            </div>
+          </div>
+
+          <div class="field-item field-location">
+            <label for="input-location">Location</label>
+            <div class="input-box">
+              <svg class="field-glyph" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <input type="text" id="input-location" placeholder="Remote" value="Remote">
+            </div>
+          </div>
+
+          <div class="field-item field-limit">
+            <div class="limit-header">
+              <label for="range-limit">Limit per board</label>
+              <span id="limit-val" class="limit-badge">20</span>
+            </div>
+            <div class="slider-box">
+              <input type="range" id="range-limit" min="1" max="30" value="20" oninput="updateLimitValue(this.value)">
+            </div>
+          </div>
+
+          <div class="field-actions">
+            <button id="btn-start" class="btn btn-primary" onclick="startScrape()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <span>Start Discovery</span>
+            </button>
+            <button id="btn-pause" class="btn btn-secondary" onclick="pauseScrape()" style="display:none;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="6" y="4" width="4" height="16"></rect>
+                <rect x="14" y="4" width="4" height="16"></rect>
+              </svg>
+              <span>Pause</span>
+            </button>
+            <button id="btn-reset" class="btn btn-ghost" onclick="resetScrape()" title="Clear state and reset">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                <path d="M21 3v5h-5"></path>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                <path d="M8 16H3v5"></path>
+              </svg>
+              <span>Reset</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Clean Role Presets -->
+        <div class="presets-row">
+          <span class="presets-caption">Focus Domains:</span>
+          <div class="chips-list">
+            <button class="chip" onclick="setRole('AI Engineer')">AI Engineer</button>
+            <button class="chip" onclick="setRole('Digital Marketer')">Digital Marketer</button>
+            <button class="chip" onclick="setRole('UI/UX Product Designer')">UI/UX Designer</button>
+            <button class="chip" onclick="setRole('Frontend Developer')">Frontend (React)</button>
+            <button class="chip" onclick="setRole('Backend FastAPI')">FastAPI / Python</button>
+            <button class="chip" onclick="setRole('Staff Backend Engineer')">Django Backend</button>
+            <button class="chip" onclick="setRole('Data Scientist')">Data Scientist</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Minimalist Metrics Strip -->
+      <section class="metrics-strip">
+        <div class="metric-block">
+          <div class="metric-label">Total Leads</div>
+          <div id="stat-total-jobs" class="metric-number">0</div>
+        </div>
+
+        <div class="metric-block">
+          <div class="metric-label">Domains Resolved</div>
+          <div id="stat-domains" class="metric-number">0</div>
+        </div>
+
+        <div class="metric-block">
+          <div class="metric-label">Career Portals</div>
+          <div id="stat-career-pages" class="metric-number">0</div>
+        </div>
+
+        <div class="metric-block highlight">
+          <div class="metric-label">Direct ATS Links</div>
+          <div id="stat-direct-links" class="metric-number">0</div>
+        </div>
+
+        <div class="metric-block">
+          <div class="metric-label">Platforms Scraped</div>
+          <div id="stat-boards-progress" class="metric-number">0 / 126</div>
+        </div>
+      </section>
+
+      <!-- Main Workspace: Leads Table & Telemetry Drawer -->
+      <div class="workspace-grid">
+        
+        <!-- Live Leads Table -->
+        <section class="card leads-panel">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-title">Discovered Leads</span>
+              <span id="table-count-badge" class="counter-badge">0</span>
+            </div>
+            <div class="filter-box">
+              <svg class="search-glyph" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="table-search" placeholder="Filter by title, company, or board..." oninput="filterTable(this.value)">
+            </div>
+          </div>
+
+          <div class="table-scroller">
+            <table class="leads-table">
+              <thead>
+                <tr>
+                  <th style="width: 44px;">#</th>
+                  <th>Role</th>
+                  <th>Company</th>
+                  <th>Location</th>
+                  <th>Source</th>
+                  <th>Listing</th>
+                  <th>Website</th>
+                  <th>Career Page</th>
+                  <th>Direct ATS</th>
+                  <th>Resolution</th>
+                </tr>
+              </thead>
+              <tbody id="leads-tbody">
+                <tr class="empty-state-row">
+                  <td colspan="10">
+                    <div class="empty-state">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      </svg>
+                      <h4>No jobs collected</h4>
+                      <p>Specify a role above and select <strong>Start Discovery</strong> to begin scraping across active platforms.</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Real-Time Activity Log Console -->
+        <section class="card console-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-title">Activity Stream</span>
+              <span class="stream-pill">Live</span>
+            </div>
+            <button class="link-btn" onclick="clearLogs()">Clear</button>
+          </div>
+          <div id="log-terminal" class="log-terminal">
+            <div class="log-line info">
+              <span class="log-time">[00:00:00]</span>
+              <span class="log-tag">[INIT]</span>
+              <span class="log-text">System initialized across 126 authentic platforms. Awaiting query.</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Collapsible Platform Matrix Panel -->
+      <section class="card matrix-panel">
+        <div class="matrix-header">
+          <div class="matrix-meta">
+            <span class="matrix-title">Platform Matrix</span>
+            <span id="selected-board-count" class="counter-pill">126 Selected</span>
+          </div>
+          <div class="matrix-actions">
+            <button class="link-btn" onclick="selectAllBoards(true)">Select all</button>
+            <span class="sep">&middot;</span>
+            <button class="link-btn" onclick="selectAllBoards(false)">Deselect all</button>
+            <span class="sep">&middot;</span>
+            <button class="link-btn" onclick="toggleBoardDrawer()">Show / Hide grid</button>
+          </div>
+        </div>
+        <div id="boards-grid-container" class="boards-grid-container">
+          <!-- Rendered dynamically by JS -->
+        </div>
+      </section>
+              <span class="log-time">[00:00:00]</span>
+              <span class="log-tag">[INIT]</span>
+              <span class="log-text">System initialized across 126 authentic platforms. Awaiting query.</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+    </main>
+
+    <!-- Minimalist Footer -->
+    <footer class="app-footer">
+      <span>AutoJob Intelligence Engine &middot; Local Node <code>192.168.18.97:8060</code></span>
+      <span>126 Platforms &middot; Sequential Per-Job ATS Enrichment</span>
+    </footer>
+
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
